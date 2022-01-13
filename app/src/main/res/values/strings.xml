@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Movie Catalogue</string>
+    <string name="movies">Movies</string>
+    <string name="tv_shows">TV Shows</string>
+    <string name="movie">Movie</string>
+    <string name="tv_show">TV Show</string>
+    <string name="title_toolbar">%s Details</string>
+    <string name="share_text">Yuk ajak teman-teman kalian nonton %s di Platform Streaming kesayangannya masing-masing</string>
+    <string name="txt_title">Title</string>
+    <string name="txt_release_date">Release Date</string>
+    <string name="txt_duration">Duration</string>
+    <string name="txt_category">Category</string>
+    <string name="txt_overview">Overview</string>
+</resources>
