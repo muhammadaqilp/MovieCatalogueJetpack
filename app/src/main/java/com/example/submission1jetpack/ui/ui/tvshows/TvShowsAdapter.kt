@@ -1,4 +1,4 @@
-package com.example.submission1jetpack.ui.tvshows
+package com.example.submission1jetpack.ui.ui.tvshows
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -8,8 +8,10 @@ import com.bumptech.glide.request.RequestOptions
 import com.example.submission1jetpack.R
 import com.example.submission1jetpack.data.TvShowEntity
 import com.example.submission1jetpack.databinding.ItemListTvshowBinding
+import com.example.submission1jetpack.utils.Constant
 import com.example.submission1jetpack.utils.ItemClickCallback
 import com.example.submission1jetpack.utils.ShareCallback
+import java.util.regex.Pattern
 
 class TvShowsAdapter(
     private val callback: ItemClickCallback,
@@ -42,16 +44,31 @@ class TvShowsAdapter(
         fun bind(tvShow: TvShowEntity) {
             with(binding) {
                 tvTitle.text = tvShow.tvShowTitle
-                tvYear.text = tvShow.tvShowRelease
+                val str = tvShow.tvShowRelease
+                val delim = "-"
+                val arr = Pattern.compile(delim).split(str.toString())
+                tvYear.text = arr[0].toString()
                 Glide.with(itemView.context)
-                    .load(tvShow.tvShowPoster)
+                    .load(Constant.BASE_URL_IMAGE + tvShow.tvShowPoster)
                     .apply(
                         RequestOptions.placeholderOf(R.drawable.ic_loading)
                             .error(R.drawable.ic_error)
                     )
                     .into(ivPoster)
-                imgShare.setOnClickListener { listener.onShareClick(tvShow.tvShowTitle) }
-                itemView.setOnClickListener { callback.onItemClicked(tvShow.tvShowId, "tvshow") }
+                imgShare.setOnClickListener {
+                    tvShow.tvShowTitle?.let { title ->
+                        listener.onShareClick(
+                            title
+                        )
+                    }
+                }
+                itemView.setOnClickListener {
+                    tvShow.tvShowId?.let { id ->
+                        callback.onItemClicked(
+                            id, "tvshow"
+                        )
+                    }
+                }
             }
         }
     }

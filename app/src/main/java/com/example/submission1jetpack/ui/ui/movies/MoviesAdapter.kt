@@ -1,4 +1,4 @@
-package com.example.submission1jetpack.ui.movies
+package com.example.submission1jetpack.ui.ui.movies
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -8,6 +8,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.example.submission1jetpack.R
 import com.example.submission1jetpack.data.MovieEntity
 import com.example.submission1jetpack.databinding.ItemListMovieBinding
+import com.example.submission1jetpack.utils.Constant
 import com.example.submission1jetpack.utils.ItemClickCallback
 import com.example.submission1jetpack.utils.ShareCallback
 import java.util.regex.Pattern
@@ -44,18 +45,31 @@ class MoviesAdapter(
             with(binding) {
                 tvTitle.text = movie.movieTitle
                 val str = movie.movieRelease
-                val delim = "/"
-                val arr = Pattern.compile(delim).split(str)
-                tvYear.text = arr[2].toString()
+                val delim = "-"
+                val arr = Pattern.compile(delim).split(str.toString())
+                tvYear.text = arr[0].toString()
                 Glide.with(itemView.context)
-                    .load(movie.moviePoster)
+                    .load(Constant.BASE_URL_IMAGE + movie.moviePoster)
                     .apply(
                         RequestOptions.placeholderOf(R.drawable.ic_loading)
                             .error(R.drawable.ic_error)
                     )
                     .into(ivPoster)
-                imgShare.setOnClickListener { listener.onShareClick(movie.movieTitle) }
-                itemView.setOnClickListener { callback.onItemClicked(movie.movieId, "movie") }
+                imgShare.setOnClickListener {
+                    movie.movieTitle?.let { title ->
+                        listener.onShareClick(
+                            title
+                        )
+                    }
+                }
+                itemView.setOnClickListener {
+                    movie.movieId?.let { id ->
+                        callback.onItemClicked(
+                            id,
+                            "movie"
+                        )
+                    }
+                }
             }
         }
     }

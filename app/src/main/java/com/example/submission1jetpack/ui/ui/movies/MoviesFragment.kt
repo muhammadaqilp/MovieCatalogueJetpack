@@ -1,5 +1,6 @@
-package com.example.submission1jetpack.ui.movies
+package com.example.submission1jetpack.ui.ui.movies
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,43 +11,44 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.submission1jetpack.R
 import com.example.submission1jetpack.databinding.FragmentMoviesBinding
-import com.example.submission1jetpack.ui.detail.DetailContentActivity
+import com.example.submission1jetpack.ui.ui.detail.DetailContentActivity
 import com.example.submission1jetpack.utils.ItemClickCallback
 import com.example.submission1jetpack.utils.ShareCallback
+import com.example.submission1jetpack.viewmodel.ViewModelFactory
 
 class MoviesFragment : Fragment(), ShareCallback, ItemClickCallback {
 
-    private lateinit var binding: FragmentMoviesBinding
+    private var _binding: FragmentMoviesBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         // Inflate the layout for this fragment
-        binding = FragmentMoviesBinding.inflate(layoutInflater, container, false)
+        _binding = FragmentMoviesBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (activity != null) {
-            val viewModel = ViewModelProvider(
-                this,
-                ViewModelProvider.NewInstanceFactory()
-            )[MoviesViewModel::class.java]
-            val movies = viewModel.getMovies()
-            if (movies.isEmpty()) {
-                binding.rvMovies.visibility = View.GONE
-                binding.ivNodata.visibility = View.VISIBLE
-            } else {
-                val moviesAdapter = MoviesAdapter(this, this)
-                moviesAdapter.setMovies(movies)
+            val factory = ViewModelFactory.getInstance()
+            val viewModel = ViewModelProvider(this, factory)[MoviesViewModel::class.java]
+            val moviesAdapter = MoviesAdapter(this, this)
 
-                with(binding.rvMovies) {
-                    layoutManager = LinearLayoutManager(context)
-                    setHasFixedSize(true)
-                    adapter = moviesAdapter
-                }
+            loading(true)
+            viewModel.getMovies().observe(viewLifecycleOwner, { movies ->
+                loading(false)
+                moviesAdapter.setMovies(movies)
+                moviesAdapter.notifyDataSetChanged()
+            })
+
+            with(binding.rvMovies) {
+                layoutManager = LinearLayoutManager(context)
+                setHasFixedSize(true)
+                adapter = moviesAdapter
             }
         }
     }
@@ -66,5 +68,15 @@ class MoviesFragment : Fragment(), ShareCallback, ItemClickCallback {
         intent.putExtra(DetailContentActivity.EXTRA_ID, id)
         intent.putExtra(DetailContentActivity.EXTRA_CATEGORY, category)
         startActivity(intent)
+    }
+
+    private fun loading(status: Boolean) {
+        binding.rvMovies.visibility = if (!status) View.VISIBLE else View.GONE
+        binding.progressBar.visibility = if (status) View.VISIBLE else View.GONE
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

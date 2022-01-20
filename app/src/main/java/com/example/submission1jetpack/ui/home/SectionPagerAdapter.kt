@@ -3,8 +3,8 @@ package com.example.submission1jetpack.ui.home
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.example.submission1jetpack.ui.movies.MoviesFragment
-import com.example.submission1jetpack.ui.tvshows.TvShowsFragment
+import com.example.submission1jetpack.ui.ui.movies.MoviesFragment
+import com.example.submission1jetpack.ui.ui.tvshows.TvShowsFragment
 
 class SectionPagerAdapter(activity: AppCompatActivity) : FragmentStateAdapter(activity) {
 

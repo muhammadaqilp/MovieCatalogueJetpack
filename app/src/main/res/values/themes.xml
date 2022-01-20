@@ -14,12 +14,4 @@
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="Theme.Submission1Jetpack.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-    </style>
-
-    <style name="Theme.Submission1Jetpack.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-
-    <style name="Theme.Submission1Jetpack.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 </resources>

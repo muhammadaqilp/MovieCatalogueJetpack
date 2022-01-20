@@ -1,8 +1,8 @@
-package com.example.submission1jetpack.ui.detail
+package com.example.submission1jetpack.ui.ui.detail
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
@@ -11,6 +11,8 @@ import com.example.submission1jetpack.R
 import com.example.submission1jetpack.data.MovieEntity
 import com.example.submission1jetpack.data.TvShowEntity
 import com.example.submission1jetpack.databinding.ActivityDetailContentBinding
+import com.example.submission1jetpack.utils.Constant
+import com.example.submission1jetpack.viewmodel.ViewModelFactory
 
 class DetailContentActivity : AppCompatActivity() {
 
@@ -23,10 +25,8 @@ class DetailContentActivity : AppCompatActivity() {
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        val viewModel = ViewModelProvider(
-            this,
-            ViewModelProvider.NewInstanceFactory()
-        )[DetailContentViewModel::class.java]
+        val factory = ViewModelFactory.getInstance()
+        val viewModel = ViewModelProvider(this, factory)[DetailContentViewModel::class.java]
 
         val extras = intent.extras
         if (extras != null) {
@@ -36,11 +36,15 @@ class DetailContentActivity : AppCompatActivity() {
                 if (category == "movie") {
                     supportActionBar?.title = resources.getString(R.string.title_toolbar, "Movie")
                     viewModel.setSelectedMovieId(id)
-                    populateMovie(viewModel.getMovie())
+                    viewModel.getMovie().observe(this, { movies ->
+                        populateMovie(movies)
+                    })
                 } else {
                     supportActionBar?.title = resources.getString(R.string.title_toolbar, "TV Show")
                     viewModel.setSelectedTvShowId(id)
-                    populateTvShow(viewModel.getTvShows())
+                    viewModel.getTvShows().observe(this, { tvShows ->
+                        populateTvShow(tvShows)
+                    })
                 }
             }
         }
@@ -50,12 +54,12 @@ class DetailContentActivity : AppCompatActivity() {
         with(binding) {
             tvTitle.text = movie.movieTitle
             tvRelease.text = movie.movieRelease
-            tvDuration.text = movie.movieDuration
+            tvDuration.text = resources.getString(R.string.tv_duration, movie.movieDuration)
             tvOverview.text = movie.movieOverview
             tvCategory.text = resources.getString(R.string.movie)
             ivPoster.tag = movie.moviePoster
             Glide.with(this@DetailContentActivity)
-                .load(movie.moviePoster)
+                .load(Constant.BASE_URL_IMAGE + movie.moviePoster)
                 .transform(RoundedCorners(20))
                 .apply(
                     RequestOptions.placeholderOf(R.drawable.ic_loading)
@@ -66,22 +70,20 @@ class DetailContentActivity : AppCompatActivity() {
     }
 
     private fun populateTvShow(tvShow: TvShowEntity) {
-        with(binding) {
-            binding.tvTitle.text = tvShow.tvShowTitle
-            binding.tvRelease.text = tvShow.tvShowRelease
-            binding.tvDuration.text = tvShow.tvShowDuration
-            binding.tvOverview.text = tvShow.tvShowOverview
-            binding.tvCategory.text = resources.getString(R.string.tv_show)
-            binding.ivPoster.tag = tvShow.tvShowPoster
-            Glide.with(this@DetailContentActivity)
-                .load(tvShow.tvShowPoster)
-                .transform(RoundedCorners(20))
-                .apply(
-                    RequestOptions.placeholderOf(R.drawable.ic_loading)
-                        .error(R.drawable.ic_error)
-                )
-                .into(binding.ivPoster)
-        }
+        binding.tvTitle.text = tvShow.tvShowTitle
+        binding.tvRelease.text = tvShow.tvShowRelease
+        binding.tvDuration.text = resources.getString(R.string.tv_duration, tvShow.tvShowDuration)
+        binding.tvOverview.text = tvShow.tvShowOverview
+        binding.tvCategory.text = resources.getString(R.string.tv_show)
+        binding.ivPoster.tag = tvShow.tvShowPoster
+        Glide.with(this@DetailContentActivity)
+            .load(Constant.BASE_URL_IMAGE + tvShow.tvShowPoster)
+            .transform(RoundedCorners(20))
+            .apply(
+                RequestOptions.placeholderOf(R.drawable.ic_loading)
+                    .error(R.drawable.ic_error)
+            )
+            .into(binding.ivPoster)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
