@@ -1,22 +1,30 @@
 package com.example.submission1jetpack.ui.ui.detail
 
 import android.os.Bundle
+import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import com.example.submission1jetpack.R
-import com.example.submission1jetpack.data.MovieEntity
-import com.example.submission1jetpack.data.TvShowEntity
+import com.example.submission1jetpack.data.source.local.entity.MovieEntity
+import com.example.submission1jetpack.data.source.local.entity.TvShowEntity
 import com.example.submission1jetpack.databinding.ActivityDetailContentBinding
 import com.example.submission1jetpack.utils.Constant
 import com.example.submission1jetpack.viewmodel.ViewModelFactory
+import com.example.submission1jetpack.vo.Status
 
 class DetailContentActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDetailContentBinding
+    private lateinit var viewModel: DetailContentViewModel
+    private var menu: Menu? = null
+    private var category: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,25 +33,51 @@ class DetailContentActivity : AppCompatActivity() {
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        val factory = ViewModelFactory.getInstance()
-        val viewModel = ViewModelProvider(this, factory)[DetailContentViewModel::class.java]
+        val factory = ViewModelFactory.getInstance(this)
+        viewModel = ViewModelProvider(this, factory)[DetailContentViewModel::class.java]
 
         val extras = intent.extras
         if (extras != null) {
-            val category = extras.getString(EXTRA_CATEGORY)
+            category = extras.getString(EXTRA_CATEGORY)
             val id = extras.getString(EXTRA_ID)
             if (category != null && id != null) {
                 if (category == "movie") {
                     supportActionBar?.title = resources.getString(R.string.title_toolbar, "Movie")
                     viewModel.setSelectedMovieId(id)
-                    viewModel.getMovie().observe(this, { movies ->
-                        populateMovie(movies)
+                    viewModel.movieList.observe(this, { movie ->
+                        if (movie != null) {
+                            when (movie.status) {
+                                Status.LOADING -> loading(true)
+                                Status.SUCCESS -> if (movie.data != null) {
+                                    loading(false)
+                                    populateMovie(movie.data)
+                                }
+                                Status.ERROR -> {
+                                    loading(false)
+                                    Toast.makeText(this, "Terjadi Kesalahan!", Toast.LENGTH_SHORT)
+                                        .show()
+                                }
+                            }
+                        }
                     })
                 } else {
                     supportActionBar?.title = resources.getString(R.string.title_toolbar, "TV Show")
                     viewModel.setSelectedTvShowId(id)
-                    viewModel.getTvShows().observe(this, { tvShows ->
-                        populateTvShow(tvShows)
+                    viewModel.tvshowList.observe(this, { tvshow ->
+                        if (tvshow != null) {
+                            when (tvshow.status) {
+                                Status.LOADING -> loading(true)
+                                Status.SUCCESS -> if (tvshow.data != null) {
+                                    loading(false)
+                                    populateTvShow(tvshow.data)
+                                }
+                                Status.ERROR -> {
+                                    loading(false)
+                                    Toast.makeText(this, "Terjadi Kesalahan!", Toast.LENGTH_SHORT)
+                                        .show()
+                                }
+                            }
+                        }
                     })
                 }
             }
@@ -86,11 +120,76 @@ class DetailContentActivity : AppCompatActivity() {
             .into(binding.ivPoster)
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_detail, menu)
+        this.menu = menu
+        if (category == "movie") {
+            viewModel.movieList.observe(this, { movie ->
+                if (movie != null) {
+                    when (movie.status) {
+                        Status.LOADING -> {}
+                        Status.SUCCESS -> if (movie.data != null) {
+                            val state = movie.data.isFavorite
+                            setFavoriteState(state)
+                        }
+                        Status.ERROR -> Toast.makeText(
+                            this,
+                            "Terjadi kesalahan!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            })
+        } else {
+            viewModel.tvshowList.observe(this, { tvshow ->
+                if (tvshow != null) {
+                    when (tvshow.status) {
+                        Status.LOADING -> {}
+                        Status.SUCCESS -> if (tvshow.data != null) {
+                            val state = tvshow.data.isFavorite
+                            setFavoriteState(state)
+                        }
+                        Status.ERROR -> Toast.makeText(
+                            this,
+                            "Terjadi kesalahan!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            })
+        }
+        return true
+    }
+
+    private fun setFavoriteState(state: Boolean) {
+        if (menu == null) return
+        val menuitem = menu?.findItem(R.id.action_favorite)
+        if (state) {
+            menuitem?.icon = ContextCompat.getDrawable(this, R.drawable.ic_favorited)
+        } else {
+            menuitem?.icon = ContextCompat.getDrawable(this, R.drawable.ic_favorite_white)
+        }
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
             onBackPressed()
         }
+        if (item.itemId == R.id.action_favorite) {
+            return if (category == "movie") {
+                viewModel.setFavoriteMovie()
+                true
+            } else {
+                viewModel.setFavoriteTvShow()
+                true
+            }
+        }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun loading(status: Boolean) {
+        binding.nested.visibility = if (!status) View.VISIBLE else View.GONE
+        binding.progressBar.visibility = if (status) View.VISIBLE else View.GONE
     }
 
     companion object {

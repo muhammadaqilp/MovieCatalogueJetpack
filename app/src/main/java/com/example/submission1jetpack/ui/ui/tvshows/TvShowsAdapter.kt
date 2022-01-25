@@ -2,11 +2,13 @@ package com.example.submission1jetpack.ui.ui.tvshows
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.paging.PagedListAdapter
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.submission1jetpack.R
-import com.example.submission1jetpack.data.TvShowEntity
+import com.example.submission1jetpack.data.source.local.entity.TvShowEntity
 import com.example.submission1jetpack.databinding.ItemListTvshowBinding
 import com.example.submission1jetpack.utils.Constant
 import com.example.submission1jetpack.utils.ItemClickCallback
@@ -16,15 +18,7 @@ import java.util.regex.Pattern
 class TvShowsAdapter(
     private val callback: ItemClickCallback,
     private val listener: ShareCallback
-) : RecyclerView.Adapter<TvShowsAdapter.ViewHolder>() {
-
-    private val listTvShow = ArrayList<TvShowEntity>()
-
-    fun setTvShows(tvShow: List<TvShowEntity>?) {
-        if (tvShow == null) return
-        this.listTvShow.clear()
-        this.listTvShow.addAll(tvShow)
-    }
+) : PagedListAdapter<TvShowEntity, TvShowsAdapter.ViewHolder>(DIFF_CALLBACK) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TvShowsAdapter.ViewHolder {
         val binding =
@@ -33,11 +27,13 @@ class TvShowsAdapter(
     }
 
     override fun onBindViewHolder(holder: TvShowsAdapter.ViewHolder, position: Int) {
-        val tvShow = listTvShow[position]
-        holder.bind(tvShow)
+        val tvShow = getItem(position)
+        if (tvShow != null) {
+            holder.bind(tvShow)
+        }
     }
 
-    override fun getItemCount(): Int = listTvShow.size
+    fun getSwipedData(swipedPosition: Int): TvShowEntity? = getItem(swipedPosition)
 
     inner class ViewHolder(private val binding: ItemListTvshowBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -63,13 +59,26 @@ class TvShowsAdapter(
                     }
                 }
                 itemView.setOnClickListener {
-                    tvShow.tvShowId?.let { id ->
+                    tvShow.tvShowId.let { id ->
                         callback.onItemClicked(
                             id, "tvshow"
                         )
                     }
                 }
             }
+        }
+    }
+
+    companion object {
+        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<TvShowEntity>() {
+            override fun areItemsTheSame(oldItem: TvShowEntity, newItem: TvShowEntity): Boolean {
+                return oldItem.tvShowId == newItem.tvShowId
+            }
+
+            override fun areContentsTheSame(oldItem: TvShowEntity, newItem: TvShowEntity): Boolean {
+                return oldItem == newItem
+            }
+
         }
     }
 }

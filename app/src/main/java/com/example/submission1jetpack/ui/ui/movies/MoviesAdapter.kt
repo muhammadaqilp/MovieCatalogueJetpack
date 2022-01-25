@@ -2,11 +2,13 @@ package com.example.submission1jetpack.ui.ui.movies
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.paging.PagedListAdapter
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.submission1jetpack.R
-import com.example.submission1jetpack.data.MovieEntity
+import com.example.submission1jetpack.data.source.local.entity.MovieEntity
 import com.example.submission1jetpack.databinding.ItemListMovieBinding
 import com.example.submission1jetpack.utils.Constant
 import com.example.submission1jetpack.utils.ItemClickCallback
@@ -16,15 +18,7 @@ import java.util.regex.Pattern
 class MoviesAdapter(
     private val callback: ItemClickCallback,
     private val listener: ShareCallback
-) : RecyclerView.Adapter<MoviesAdapter.ViewHolder>() {
-
-    private var listMovies = ArrayList<MovieEntity>()
-
-    fun setMovies(movie: List<MovieEntity>?) {
-        if (movie == null) return
-        this.listMovies.clear()
-        this.listMovies.addAll(movie)
-    }
+) : PagedListAdapter<MovieEntity, MoviesAdapter.ViewHolder>(DIFF_CALLBACK) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MoviesAdapter.ViewHolder {
         val binding =
@@ -33,11 +27,13 @@ class MoviesAdapter(
     }
 
     override fun onBindViewHolder(holder: MoviesAdapter.ViewHolder, position: Int) {
-        val movie = listMovies[position]
-        holder.bind(movie)
+        val movie = getItem(position)
+        if (movie != null) {
+            holder.bind(movie)
+        }
     }
 
-    override fun getItemCount(): Int = listMovies.size
+    fun getSwipedData(swipedPosition: Int): MovieEntity? = getItem(swipedPosition)
 
     inner class ViewHolder(private val binding: ItemListMovieBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -63,7 +59,7 @@ class MoviesAdapter(
                     }
                 }
                 itemView.setOnClickListener {
-                    movie.movieId?.let { id ->
+                    movie.movieId.let { id ->
                         callback.onItemClicked(
                             id,
                             "movie"
@@ -71,6 +67,19 @@ class MoviesAdapter(
                     }
                 }
             }
+        }
+    }
+
+    companion object {
+        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<MovieEntity>() {
+            override fun areItemsTheSame(oldItem: MovieEntity, newItem: MovieEntity): Boolean {
+                return oldItem.movieId == newItem.movieId
+            }
+
+            override fun areContentsTheSame(oldItem: MovieEntity, newItem: MovieEntity): Boolean {
+                return oldItem == newItem
+            }
+
         }
     }
 }

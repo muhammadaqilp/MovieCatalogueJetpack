@@ -1,17 +1,27 @@
 package com.example.submission1jetpack.data.source
 
 import androidx.lifecycle.LiveData
-import com.example.submission1jetpack.data.MovieEntity
-import com.example.submission1jetpack.data.TvShowEntity
+import androidx.paging.PagedList
+import com.example.submission1jetpack.data.source.local.entity.MovieEntity
+import com.example.submission1jetpack.data.source.local.entity.TvShowEntity
+import com.example.submission1jetpack.vo.Resource
 
 interface DataSource {
 
-    fun getAllMovies(): LiveData<List<MovieEntity>>
+    fun getAllMovies(sort: String): LiveData<Resource<PagedList<MovieEntity>>>
 
-    fun getAllTvShows(): LiveData<List<TvShowEntity>>
+    fun getAllTvShows(sort: String): LiveData<Resource<PagedList<TvShowEntity>>>
 
-    fun getDetailMovies(movieId: String): LiveData<MovieEntity>
+    fun getDetailMovies(movieId: String): LiveData<Resource<MovieEntity>>
 
-    fun getDetailTvShows(tvShowId: String): LiveData<TvShowEntity>
+    fun getDetailTvShows(tvShowId: String): LiveData<Resource<TvShowEntity>>
+
+    fun getFavoriteMovies(): LiveData<PagedList<MovieEntity>>
+
+    fun getFavoriteTvShows(): LiveData<PagedList<TvShowEntity>>
+
+    fun setMoviesFavorite(movies: MovieEntity, state: Boolean)
+
+    fun setTvShowFavorite(tvShow: TvShowEntity, state: Boolean)
 
 }
