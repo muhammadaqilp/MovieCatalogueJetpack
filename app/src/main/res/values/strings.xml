@@ -12,4 +12,15 @@
     <string name="txt_category">Category</string>
     <string name="txt_overview">Overview</string>
     <string name="tv_duration">%s m</string>
+    <string name="favorite">Favorite</string>
+
+    <string name="txt_sortby">Sort by: %s</string>
+    <string-array name="Sort">
+        <item>Newest Release</item>
+        <item>Oldest Release</item>
+        <item>Random</item>
+    </string-array>
+
+    <string name="undo_delete">Undo your previous deleted item?</string>
+    <string name="yes">YES</string>
 </resources>
