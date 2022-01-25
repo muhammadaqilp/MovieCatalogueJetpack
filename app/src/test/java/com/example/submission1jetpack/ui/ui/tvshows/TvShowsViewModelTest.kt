@@ -3,9 +3,11 @@ package com.example.submission1jetpack.ui.ui.tvshows
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import com.example.submission1jetpack.data.TvShowEntity
+import androidx.paging.PagedList
 import com.example.submission1jetpack.data.source.Repository
-import com.example.submission1jetpack.utils.DataDummy
+import com.example.submission1jetpack.data.source.local.entity.TvShowEntity
+import com.example.submission1jetpack.utils.SortUtils
+import com.example.submission1jetpack.vo.Resource
 import com.nhaarman.mockitokotlin2.verify
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -17,10 +19,11 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnitRunner
 
-@RunWith(MockitoJUnitRunner::class)
+@RunWith(MockitoJUnitRunner.Silent::class)
 class TvShowsViewModelTest {
 
     private lateinit var viewModel: TvShowsViewModel
+    private val sort = SortUtils.NEWEST
 
     @get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
@@ -29,7 +32,10 @@ class TvShowsViewModelTest {
     private lateinit var repository: Repository
 
     @Mock
-    private lateinit var observer: Observer<List<TvShowEntity>>
+    private lateinit var observer: Observer<Resource<PagedList<TvShowEntity>>>
+
+    @Mock
+    private lateinit var pagedList: PagedList<TvShowEntity>
 
     @Before
     fun setup() {
@@ -38,33 +44,35 @@ class TvShowsViewModelTest {
 
     @Test
     fun getTvShowsNotNull() {
-        val dummyTvshow = DataDummy.generateTvShowsData()
-        val tvShow = MutableLiveData<List<TvShowEntity>>()
-        tvShow.value = dummyTvshow
+        val dummyTvShow = Resource.success(pagedList)
+        `when`(dummyTvShow.data?.size).thenReturn(10)
+        val tv = MutableLiveData<Resource<PagedList<TvShowEntity>>>()
+        tv.value = dummyTvShow
 
-        `when`(repository.getAllTvShows()).thenReturn(tvShow)
-        val tvshowEntities = viewModel.getTvShows().value
-        verify(repository).getAllTvShows()
+        `when`(repository.getAllTvShows(sort)).thenReturn(tv)
+        val tvEntities = viewModel.getTvShows(sort).value?.data
+        verify(repository).getAllTvShows(sort)
 
-        assertNotNull(tvshowEntities)
+        assertNotNull(tvEntities)
 
-        viewModel.getTvShows().observeForever(observer)
-        verify(observer).onChanged(dummyTvshow)
+        viewModel.getTvShows(sort).observeForever(observer)
+        verify(observer).onChanged(dummyTvShow)
     }
 
     @Test
     fun getTvShowSizeEqualsTen() {
-        val dummyTvshow = DataDummy.generateTvShowsData()
-        val tvShow = MutableLiveData<List<TvShowEntity>>()
-        tvShow.value = dummyTvshow
+        val dummyTvShow = Resource.success(pagedList)
+        `when`(dummyTvShow.data?.size).thenReturn(10)
+        val tv = MutableLiveData<Resource<PagedList<TvShowEntity>>>()
+        tv.value = dummyTvShow
 
-        `when`(repository.getAllTvShows()).thenReturn(tvShow)
-        val tvshowEntities = viewModel.getTvShows().value
-        verify(repository).getAllTvShows()
+        `when`(repository.getAllTvShows(sort)).thenReturn(tv)
+        val tvEntities = viewModel.getTvShows(sort).value?.data
+        verify(repository).getAllTvShows(sort)
 
-        assertEquals(10, tvshowEntities?.size)
+        assertEquals(10, tvEntities?.size)
 
-        viewModel.getTvShows().observeForever(observer)
-        verify(observer).onChanged(dummyTvshow)
+        viewModel.getTvShows(sort).observeForever(observer)
+        verify(observer).onChanged(dummyTvShow)
     }
 }
