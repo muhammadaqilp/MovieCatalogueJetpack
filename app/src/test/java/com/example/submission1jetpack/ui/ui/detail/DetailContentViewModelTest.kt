@@ -27,6 +27,7 @@ class DetailContentViewModelTest {
     private val movieId = dummyMovie.movieId
     private val dummyTvShow = DataDummy.generateTvShowsData()[0]
     private val tvShowId = dummyTvShow.tvShowId
+    private lateinit var m: MovieEntity
 
     @get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
@@ -40,101 +41,118 @@ class DetailContentViewModelTest {
     @Mock
     private lateinit var tvshowObserver: Observer<Resource<TvShowEntity>>
 
-    @Mock
-    private lateinit var movEntity: MovieEntity
-
     @Before
     fun setUp() {
         viewModel = DetailContentViewModel(repository)
-//        viewModel.setSelectedTvShowId(tvShowId)
+        m = MovieEntity(
+            dummyMovie.movieId,
+            dummyMovie.movieTitle,
+            dummyMovie.movieOverview,
+            dummyMovie.movieRelease,
+            dummyMovie.movieDuration,
+            dummyMovie.moviePoster,
+            dummyMovie.isFavorite
+        )
+        viewModel.setSelectedMovieId(movieId)
+        viewModel.setSelectedTvShowId(tvShowId)
     }
 
     @Test
     fun getMoviesHasSameValue() {
-        val dummy = Resource.success(movEntity)
+        val dummy = Resource.success(dummyMovie)
         val movies = MutableLiveData<Resource<MovieEntity>>()
         movies.value = dummy
 
+        viewModel.setSelectedMovieId(movieId)
         `when`(repository.getDetailMovies(movieId)).thenReturn(movies)
-        val movieEntity = viewModel.movieList.value?.data
-        verify(repository).getDetailMovies(movieId)
-
-        assertNotNull(movieEntity)
-//        assertEquals(dummyMovie.movieId, movieEntity?.movieId)
-//        assertEquals(dummyMovie.movieTitle, movieEntity?.movieTitle)
-//        assertEquals(dummyMovie.movieDuration, movieEntity?.movieDuration)
-//        assertEquals(dummyMovie.movieRelease, movieEntity?.movieRelease)
-//        assertEquals(dummyMovie.movieOverview, movieEntity?.movieOverview)
-//        assertEquals(dummyMovie.moviePoster, movieEntity?.moviePoster)
-//        assertEquals(dummyMovie.isFavorite, movieEntity?.isFavorite)
 
         viewModel.movieList.observeForever(movieObserver)
         verify(movieObserver).onChanged(dummy)
+
+        verify(repository).getDetailMovies(movieId)
+
+        val movieEntity = viewModel.movieList.value?.data
+
+        assertEquals(dummyMovie.movieId, movieEntity?.movieId)
+        assertEquals(dummyMovie.movieTitle, movieEntity?.movieTitle)
+        assertEquals(dummyMovie.movieDuration, movieEntity?.movieDuration)
+        assertEquals(dummyMovie.movieRelease, movieEntity?.movieRelease)
+        assertEquals(dummyMovie.movieOverview, movieEntity?.movieOverview)
+        assertEquals(dummyMovie.moviePoster, movieEntity?.moviePoster)
+        assertEquals(dummyMovie.isFavorite, movieEntity?.isFavorite)
     }
 
     @Test
     fun getMoviesNotNull() {
-        val dummyMovies = Resource.success(dummyMovie)
-        `when`(dummyMovies.data).thenReturn(dummyMovie)
+        val dummy = Resource.success(dummyMovie)
         val movies = MutableLiveData<Resource<MovieEntity>>()
-        movies.value = dummyMovies
+        movies.value = dummy
 
+        viewModel.setSelectedMovieId(movieId)
         `when`(repository.getDetailMovies(movieId)).thenReturn(movies)
-        val movieEntity = viewModel.movieList.value
-        verify(repository).getDetailMovies(movieId)
-
-        assertNotNull(movieEntity?.data)
-        assertNotNull(movieEntity?.data?.movieId)
-        assertNotNull(movieEntity?.data?.movieTitle)
-        assertNotNull(movieEntity?.data?.movieDuration)
-        assertNotNull(movieEntity?.data?.movieRelease)
-        assertNotNull(movieEntity?.data?.movieOverview)
-        assertNotNull(movieEntity?.data?.moviePoster)
 
         viewModel.movieList.observeForever(movieObserver)
-        verify(movieObserver).onChanged(dummyMovies)
+        verify(movieObserver).onChanged(dummy)
+
+        verify(repository).getDetailMovies(movieId)
+
+        val movieEntity = viewModel.movieList.value?.data
+
+        assertNotNull(movieEntity)
+        assertNotNull(movieEntity?.movieId)
+        assertNotNull(movieEntity?.movieTitle)
+        assertNotNull(movieEntity?.movieDuration)
+        assertNotNull(movieEntity?.movieRelease)
+        assertNotNull(movieEntity?.movieOverview)
+        assertNotNull(movieEntity?.moviePoster)
     }
-//
-//    @Test
-//    fun getTvShowsHasSameValue() {
-//        val tvShow = MutableLiveData<TvShowEntity>()
-//        tvShow.value = dummyTvShow
-//
-//        `when`(repository.getDetailTvShows(tvShowId.toString())).thenReturn(tvShow)
-//        viewModel.setSelectedTvShowId(dummyTvShow.tvShowId.toString())
-//        val tvshowEntity = viewModel.getTvShows().value as TvShowEntity
-//        verify(repository).getDetailTvShows(tvShowId.toString())
-//
-//        assertEquals(dummyTvShow.tvShowId, tvshowEntity.tvShowId)
-//        assertEquals(dummyTvShow.tvShowTitle, tvshowEntity.tvShowTitle)
-//        assertEquals(dummyTvShow.tvShowDuration, tvshowEntity.tvShowDuration)
-//        assertEquals(dummyTvShow.tvShowRelease, tvshowEntity.tvShowRelease)
-//        assertEquals(dummyTvShow.tvShowOverview, tvshowEntity.tvShowOverview)
-//        assertEquals(dummyTvShow.tvShowPoster, tvshowEntity.tvShowPoster)
-//
-//        viewModel.getTvShows().observeForever(tvshowObserver)
-//        verify(tvshowObserver).onChanged(dummyTvShow)
-//    }
-//
-//    @Test
-//    fun getTvShowsNotNull() {
-//        val tvShow = MutableLiveData<TvShowEntity>()
-//        tvShow.value = dummyTvShow
-//
-//        `when`(repository.getDetailTvShows(tvShowId.toString())).thenReturn(tvShow)
-//        viewModel.setSelectedTvShowId(dummyTvShow.tvShowId.toString())
-//        val tvshowEntity = viewModel.getTvShows().value as TvShowEntity
-//        verify(repository).getDetailTvShows(tvShowId.toString())
-//
-//        assertNotNull(tvshowEntity)
-//        assertNotNull(tvshowEntity.tvShowId)
-//        assertNotNull(tvshowEntity.tvShowTitle)
-//        assertNotNull(tvshowEntity.tvShowDuration)
-//        assertNotNull(tvshowEntity.tvShowRelease)
-//        assertNotNull(tvshowEntity.tvShowOverview)
-//        assertNotNull(tvshowEntity.tvShowPoster)
-//
-//        viewModel.getTvShows().observeForever(tvshowObserver)
-//        verify(tvshowObserver).onChanged(dummyTvShow)
-//    }
+
+    @Test
+    fun getTvShowsHasSameValue() {
+        val dummy = Resource.success(dummyTvShow)
+        val tv = MutableLiveData<Resource<TvShowEntity>>()
+        tv.value = dummy
+
+        viewModel.setSelectedTvShowId(tvShowId)
+        `when`(repository.getDetailTvShows(tvShowId)).thenReturn(tv)
+
+        viewModel.tvshowList.observeForever(tvshowObserver)
+        verify(tvshowObserver).onChanged(dummy)
+
+        verify(repository).getDetailTvShows(tvShowId)
+
+        val tvshowEntity = viewModel.tvshowList.value?.data
+
+        assertEquals(dummyTvShow.tvShowId, tvshowEntity?.tvShowId)
+        assertEquals(dummyTvShow.tvShowTitle, tvshowEntity?.tvShowTitle)
+        assertEquals(dummyTvShow.tvShowDuration, tvshowEntity?.tvShowDuration)
+        assertEquals(dummyTvShow.tvShowRelease, tvshowEntity?.tvShowRelease)
+        assertEquals(dummyTvShow.tvShowOverview, tvshowEntity?.tvShowOverview)
+        assertEquals(dummyTvShow.tvShowPoster, tvshowEntity?.tvShowPoster)
+    }
+
+    @Test
+    fun getTvShowsNotNull() {
+        val dummy = Resource.success(dummyTvShow)
+        val tv = MutableLiveData<Resource<TvShowEntity>>()
+        tv.value = dummy
+
+        viewModel.setSelectedTvShowId(tvShowId)
+        `when`(repository.getDetailTvShows(tvShowId)).thenReturn(tv)
+
+        viewModel.tvshowList.observeForever(tvshowObserver)
+        verify(tvshowObserver).onChanged(dummy)
+
+        verify(repository).getDetailTvShows(tvShowId)
+
+        val tvshowEntity = viewModel.tvshowList.value?.data
+
+        assertNotNull(tvshowEntity)
+        assertNotNull(tvshowEntity?.tvShowId)
+        assertNotNull(tvshowEntity?.tvShowTitle)
+        assertNotNull(tvshowEntity?.tvShowDuration)
+        assertNotNull(tvshowEntity?.tvShowRelease)
+        assertNotNull(tvshowEntity?.tvShowOverview)
+        assertNotNull(tvshowEntity?.tvShowPoster)
+    }
 }
